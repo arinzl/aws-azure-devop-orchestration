@@ -1,0 +1,102 @@
+trigger: 
+  branches:
+    include:
+    - '*'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+parameters:
+  - name: terraform_workspace
+    displayName: "Terraform Workspace"
+    type: string
+    default: default
+    values:
+    - default
+
+variables:
+- name: terraformVersion
+  value: '1.2.7'
+- name: service_connection_name
+  value: 'AWS-Terraform-Shared-Services'
+- name: terraform_backend_state_bucket
+  value: 'terraform-state-bucket-XXXX-ss-XXXX'
+- name: terraform_backend_state_key
+  value: 'demo-azuredevops-aws-orchestration'
+
+stages:
+
+## Plan Stage - Automatically triggers pipeline on repo commits
+- stage: Plan
+
+  jobs:
+  - job: Plan
+    steps:
+    - checkout: self
+      persistCredentials: true
+      lfs: true
+
+    - task: TerraformInstaller@0
+      displayName: Install Terraform
+      inputs:
+        terraformVersion: '$(terraformVersion)'
+
+
+    - task: TerraformTaskV1@0
+      displayName: Run Terraform Init
+      inputs:
+        provider: 'aws'
+        command: 'init'
+        backendServiceAWS: $(service_connection_name)
+        backendAWSBucketName: $(terraform_backend_state_bucket)
+        backendAWSKey: $(terraform_backend_state_key)
+
+    - task: TerraformTaskV1@0
+      displayName: Run Terraform Plan
+      inputs:
+        provider: 'aws'
+        command: 'plan'
+        environmentServiceNameAWS: $(service_connection_name)
+
+
+## Approvals Stage - omitted for demo simplicity   
+
+## Deployment Stage -
+
+- stage: Deployment
+  jobs:
+  - job: Deployment
+    steps:
+    - checkout: self
+      persistCredentials: true
+      lfs: true
+
+    - task: TerraformInstaller@0
+      displayName: Install Terraform
+      inputs:
+        terraformVersion: '$(terraformVersion)'
+
+    - task: TerraformTaskV1@0
+      displayName: Run Terraform Init
+      inputs:
+        provider: 'aws'
+        command: 'init'
+        backendServiceAWS: $(service_connection_name)
+        backendAWSBucketName: $(terraform_backend_state_bucket)
+        backendAWSKey: $(terraform_backend_state_key)
+
+    - task: TerraformTaskV1@0
+      displayName: Run Terraform Apply
+      inputs:
+        provider: 'aws'
+        command: 'apply'
+        environmentServiceNameAWS: $(service_connection_name)
+    
+    - task: TerraformTaskV4@4
+      displayName: show tf state (debugging)
+      inputs:
+        provider: 'aws'
+        command: 'show'
+        outputTo: 'console'
+        outputFormat: 'default'
+        environmentServiceNameAWS: $(service_connection_name)
