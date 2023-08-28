@@ -49,7 +49,6 @@ data "aws_iam_policy_document" "kms_policy_s3" {
       variable = "kms:EncryptionContext:aws:s3:arn"
       values   = ["arn:aws:s3:::*"]
     }
-
   }
 }
 
