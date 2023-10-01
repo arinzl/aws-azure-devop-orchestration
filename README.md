@@ -1,6 +1,6 @@
 # Overview
 
-Please see blog site https://devbuildit.com/2023/xxxxx for detailed explaination of this repo contents.
+Please see blog site hhttps://devbuildit.com/2023/10/02/aws-orchestration-via-azuredevops-terraform-the-ugly-way/ for detailed explaination of this repo contents.
 
 This repo (and associated blog) will help you to setup a test environment on AWS so you can following the blog tutorial above.  AWS Infrastructure deployment:
 ![Demo MGN](./images/BLOG-AzureDevOps01.png) 
